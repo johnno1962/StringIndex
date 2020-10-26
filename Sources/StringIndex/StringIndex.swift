@@ -12,7 +12,7 @@
 
 // Basic operators to offset String.Index when used in a subscript
 public func + (index: String.Index, offset: Int) -> String.OffsetIndex {
-    return .index(index: index, offset: offset)
+    return .indexOffset(index: index, offset: offset)
 }
 public func - (index: String.Index, offset: Int) -> String.OffsetIndex {
     return index + -offset
@@ -22,14 +22,14 @@ extension String {
 
     /// Represents an index to be offset
     public enum OffsetIndex: Comparable {
-        case index(index: Index, offset: Int),
+        case indexOffset(index: Index, offset: Int),
              start, startOffset(offset: Int), end, endOffset(offset: Int),
              first(of: Character), firstOffset(of: Character, offset: Int),
              last(of: Character), lastOffset(of: Character, offset: Int)
 
-        func index<S: StringProtocol>(in string: S) -> String.Index {
+        public func index<S: StringProtocol>(in string: S) -> String.Index {
             switch self {
-            case .index(let index, let offset):
+            case .indexOffset(let index, let offset):
                 return string.index(index, offsetBy: offset)
             case .start:
                 return string.startIndex
@@ -41,22 +41,22 @@ extension String {
                 return string.index(string.endIndex, offsetBy: offset)
             case .first(of: let c):
                 guard let first = string.firstIndex(of: c) else {
-                    fatalError("Unable to locate '\(c)' in \(string)")
+                    fatalError("Unable to locate '\(c)' in: '\(string)'")
                 }
                 return first
             case .firstOffset(of: let c, offset: let offset):
                 guard let first = string.firstIndex(of: c) else {
-                    fatalError("Unable to locate '\(c)' in \(string)")
+                    fatalError("Unable to locate '\(c)' in: '\(string)'")
                 }
                 return string.index(first, offsetBy: offset)
             case .last(of: let c):
                 guard let last = string.lastIndex(of: c) else {
-                    fatalError("Unable to locate '\(c)' in \(string)")
+                    fatalError("Unable to locate '\(c)' in: '\(string)'")
                 }
                 return last
             case .lastOffset(of: let c, offset: let offset):
                 guard let last = string.lastIndex(of: c) else {
-                    fatalError("Unable to locate '\(c)' in \(string)")
+                    fatalError("Unable to locate '\(c)' in: '\(string)'")
                 }
                 return string.index(last, offsetBy: offset)
             }
@@ -65,8 +65,8 @@ extension String {
         // Chaining offsets in expressions
         public static func + (index: OffsetIndex, offset: Int) -> OffsetIndex {
             switch index {
-            case .index(let index, let offset0):
-                return .index(index: index, offset: offset0 + offset)
+            case .indexOffset(let index, let offset0):
+                return .indexOffset(index: index, offset: offset0 + offset)
             case .start:
                 return .startOffset(offset: offset)
             case .startOffset(let offset0):

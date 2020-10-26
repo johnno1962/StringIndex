@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name        = "StringIndex"
-    s.version     = "1.1.0"
+    s.version     = "1.1.1"
     s.summary     = "Simplified String indexing"
     s.homepage    = "https://github.com/johnno1962/StringIndex"
     s.social_media_url = "https://twitter.com/Injection4Xcode"

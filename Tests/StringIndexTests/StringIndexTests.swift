@@ -24,6 +24,18 @@ final class StringIndexTests: XCTestCase {
         XCTAssertEqual(str, "Hollo, Warld?!.")
 
         XCTAssertEqual(str[.start+2 ..< .end-2], "llo, Warld?")
+        XCTAssertEqual(str[..<(.first(of:" "))], "Hollo,")
+        XCTAssertEqual(str[(.last(of: " ")+1)...], "Warld?!.")
+
+        let fifthChar: Character = str[.start+4]
+        let firstWord: Substring = str[..<(.first(of:" "))]
+        let stripped: Substring = str[.start+1 ..< .end-1]
+        let lastWord: Substring = str[(.last(of: " ")+1)...]
+
+        XCTAssertEqual(fifthChar, "o")
+        XCTAssertEqual(firstWord, "Hollo,")
+        XCTAssertEqual(stripped, "ollo, Warld?!")
+        XCTAssertEqual(lastWord, "Warld?!.")
     }
 
     static var allTests = [
