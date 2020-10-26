@@ -9,10 +9,10 @@ final class StringIndexTests: XCTestCase {
         var str = "Hello, World!"
         str.insert("?", at: str.endIndex-1)
         XCTAssertEqual(str, "Hello, World?!")
-        str[str.endIndex-6] = "a"
+        str[.end-6] = "a"
         XCTAssertEqual(str, "Hello, Warld?!")
-        str[str.startIndex+1] = "o"
-        XCTAssertEqual(str[..<(str.firstIndex(of: " ")+0)], "Hollo,")
+        str[.start+1] = "o"
+        XCTAssertEqual(str[..<(.first(of: " "))], "Hollo,")
         XCTAssertEqual(str[(str.endIndex-2)...], "?!")
 
         for i in 1...str.count {
@@ -20,10 +20,10 @@ final class StringIndexTests: XCTestCase {
                            str[str.endIndex-i])
         }
 
-        str.insert(".", at: str.endIndex+0+0)
+        str.insert(".", at: .end+0+0)
         XCTAssertEqual(str, "Hollo, Warld?!.")
 
-        XCTAssertEqual(str[str.startIndex+2 ..< str.endIndex-2], "llo, Warld?")
+        XCTAssertEqual(str[.start+2 ..< .end-2], "llo, Warld?")
     }
 
     static var allTests = [
