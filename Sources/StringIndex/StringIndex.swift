@@ -106,7 +106,7 @@ extension String {
 
 extension StringProtocol {
     public typealias OffsetIndex = String.OffsetIndex
-    public typealias OISubstring = Substring // Can be String
+    public typealias OISubstring = String // Can/should? be Substring
 
     // Subscripts on StringProtocol for OffsetIndex type
     public subscript (offset: OffsetIndex) -> Character {
