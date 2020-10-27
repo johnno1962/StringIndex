@@ -30,4 +30,11 @@ let firstWord: Substring = str[..<(.first(of:" "))]
 let lastWord: Substring = str[(.last(of: " ")+1)...]
 ```
 All subscript operators have setters defined so you can modify
-string contents.
+string contents. There are also subscripts prefixed by the label
+`safe:` that can return nil if offseting results in an invalid index.
+
+```
+XCTAssertNil(str[safe: .start-1])
+XCTAssertNil(str[safe: .end+1])
+```
+Attempting to assign to an invalid index is still a fatal error.

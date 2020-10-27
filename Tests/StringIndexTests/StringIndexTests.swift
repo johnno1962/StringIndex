@@ -40,6 +40,13 @@ final class StringIndexTests: XCTestCase {
         str[..<(.first(of:" "))] = "Hi,"
         str[.first(of:"a")] = "o"
         XCTAssertEqual(str, "Hi, World?!.")
+        XCTAssertEqual(str[(.last(of: " ")+1)...], "World?!.")
+
+        XCTAssertNil(str[safe: .start-1])
+        XCTAssertNil(str[safe: .end+1])
+        XCTAssertNil(str[safe: .last(of: "🤠")])
+
+        str[.end] = "🤡"
     }
 
     static var allTests = [
