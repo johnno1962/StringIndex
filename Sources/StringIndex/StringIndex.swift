@@ -9,6 +9,8 @@
 //
 //  Repo: https://github.com/johnno1962/StringIndex.git
 //
+//  $Id: //depot/StringIndex/Sources/StringIndex/StringIndex.swift#1 $
+//
 
 // Basic operators to offset String.Index when used in a subscript
 public func + (index: String.Index, offset: Int) -> String.OffsetIndex {
@@ -31,11 +33,11 @@ extension String {
                                           in string: S) -> Index? {
             var out = index
             var offset = offsetBy
-            while offset < 0 && index != string.startIndex {
+            while offset < 0 && index > string.startIndex {
                 out = string.index(before: out)
                 offset += 1
             }
-            while offset > 0 && index != string.endIndex {
+            while offset > 0 && index < string.endIndex {
                 out = string.index(after: out)
                 offset -= 1
             }
