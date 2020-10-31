@@ -45,8 +45,11 @@ final class StringIndexTests: XCTestCase {
         XCTAssertNil(str[safe: .start-1])
         XCTAssertNil(str[safe: .end+1])
         XCTAssertNil(str[safe: .last(of: "🤠")])
+        XCTAssertNil(str[safe: ..<(.first(of: "z"))])
 
         str[.end] = "🤡"
+        XCTAssertEqual(str, "Hi, World?!.🤡")
+
     }
 
     static var allTests = [
