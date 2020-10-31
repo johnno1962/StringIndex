@@ -9,7 +9,7 @@
 //
 //  Repo: https://github.com/johnno1962/StringIndex.git
 //
-//  $Id: //depot/StringIndex/Sources/StringIndex/StringIndex.swift#8 $
+//  $Id: //depot/StringIndex/Sources/StringIndex/StringIndex.swift#9 $
 //
 
 // Basic operators to offset String.Index when used in a subscript
