@@ -128,13 +128,13 @@ extension StringProtocol {
     public subscript (offset: OffsetIndex) -> Character {
         get {
             guard let result = self[safe: offset] else {
-                fatalError("Invalid offset index \(String(describing: offset)), \(#function)")
+                fatalError("Invalid offset index \(offset), \(#function)")
             }
             return result
         }
         set (newValue) {
             guard let start = offset.index(in: self) else {
-                fatalError("Invalid offset index \(String(describing: offset)), \(#function)")
+                fatalError("Invalid offset index \(offset), \(#function)")
             }
             // Assigning Chacater to endIndex is an append.
             let end = start + (start < endIndex ? 1 : 0)
@@ -146,14 +146,14 @@ extension StringProtocol {
     public subscript (range: Range<OffsetIndex>) -> OISubstring {
         get {
             guard let result = self[safe: range] else {
-                fatalError("Invalid range of offset index \(String(describing: range)), \(#function)")
+                fatalError("Invalid range of offset index \(range), \(#function)")
             }
             return result
         }
         set (newValue) {
             guard let from = range.lowerBound.index(in: self),
                 let to = range.upperBound.index(in: self) else {
-                fatalError("Invalid range of offset index \(String(describing: range)), \(#function)")
+                fatalError("Invalid range of offset index \(range), \(#function)")
             }
             let before = self[..<from], after = self[to...]
             self = Self(String(before) + String(newValue) + String(after))!
