@@ -1,4 +1,5 @@
 import XCTest
+import Foundation
 @testable import StringIndex
 
 final class StringIndexTests: XCTestCase {
@@ -9,7 +10,7 @@ final class StringIndexTests: XCTestCase {
         var str = "Hello, World!"
         str.insert("?", at: str.endIndex-1)
         XCTAssertEqual(str, "Hello, World?!")
-        str[.end-6] = "a"
+        str[.first(of: "o")+1 + .first(of: "o")] = "a"
         XCTAssertEqual(str, "Hello, Warld?!")
         str[.start+1] = "o"
         XCTAssertEqual(str[..<(.first(of: " "))], "Hollo,")
@@ -37,8 +38,17 @@ final class StringIndexTests: XCTestCase {
         XCTAssertEqual(stripped, "ollo, Warld?!")
         XCTAssertEqual(lastWord, "Warld?!.")
 
+        XCTAssertEqual(str.range(of: "l",
+                                 range: Range(.first(of: "W") ..< .end,
+                                              in: str)!)?.lowerBound,
+                       str.index(of:.last(of: "l")))
+
+        XCTAssertEqual(str.index(of: .either(.first(of: "z"),
+                                             or: .first(of: "W"))),
+                       str.index(of: .first(of: "W")))
+
         str[..<(.first(of:" "))] = "Hi,"
-        str[.first(of:"a")] = "o"
+        str[.last(of:"a")] = "o"
         XCTAssertEqual(str, "Hi, World?!.")
         XCTAssertEqual(str[(.last(of: " ")+1)...], "World?!.")
 
@@ -46,6 +56,7 @@ final class StringIndexTests: XCTestCase {
         XCTAssertNil(str[safe: .end+1])
         XCTAssertNil(str[safe: .last(of: "🤠")])
         XCTAssertNil(str[safe: ..<(.first(of: "z"))])
+
 
         str[.end] = "🤡"
         XCTAssertEqual(str, "Hi, World?!.🤡")
