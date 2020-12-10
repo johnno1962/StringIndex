@@ -23,11 +23,31 @@ a string for example:
 ```
 let trimmed: Substring = str[.start+1 ..< .end-1]
 ```
-Or you can search in a `String` for a `Character`:
+Or you can search in a `String` for another `String` and
+use the index of the start or the end of the match:
 
 ```
 let firstWord: Substring = str[..<(.first(of:" "))]
-let lastWord: Substring = str[(.last(of: " ")+1)...]
+let lastWord: Substring = str[(.last(of: " ", end: true))...]
+```
+You can search for regular expression patterns:
+
+```
+let firstWord: Substring = str[..<(.first(of:#"\w+"#, regex: true, end: true))]
+let lastWord: Substring = str[(.last(of: #"\w+"#, regex: true))...]
+```
+Movements around the string can be chained together using the `+` opertator:
+
+```
+let firstTwoWords = str[..<(.first(of:#"\w+"#, regex: true, end: true) +
+                            .first(of:#"\w+"#, regex: true, end: true))]
+```
+To realise a String.Index from these expressions use the 
+index(of:) method on String from the package.
+
+```
+XCTAssertEqual(str.index(of: .start), str.startIndex)
+XCTAssertEqual(str.index(of: .first(of: " ")), str.firstIndex(of: " "))
 ```
 All subscript operators have setters defined so you can modify
 string contents. There are also subscripts prefixed by the label
@@ -38,3 +58,6 @@ XCTAssertNil(str[safe: .start-1])
 XCTAssertNil(str[safe: .end+1])
 ```
 Attempting to assign to an invalid index is still a fatal error.
+Have a look through the tests to see what else you can do.
+
+$Date: 2020/12/10 $

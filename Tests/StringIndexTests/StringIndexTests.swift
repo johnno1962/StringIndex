@@ -52,15 +52,28 @@ final class StringIndexTests: XCTestCase {
         XCTAssertEqual(str, "Hi, World?!.")
         XCTAssertEqual(str[(.last(of: " ")+1)...], "World?!.")
 
+        XCTAssertEqual(str[.first(of: #"\w+"#, regex: true, end: false)], "H")
+        XCTAssertEqual(str[.first(of: #"\w+"#, regex: true, end: true)], ",")
+        XCTAssertEqual(str[.last(of: #"\w+"#, regex: true, end: false)], "W")
+        XCTAssertEqual(str[.last(of: #"\w+"#, regex: true, end: true)], "?")
+
+        XCTAssertEqual(str[.first(of: #"\w+"#, regex: true, end: true) ..<
+                            .last(of: #"\w+"#, regex: true)], ", ")
+
+        XCTAssertEqual(str[..<(.first(of:#"\w+"#, regex: true, end: true) +
+                               .first(of:#"\w+"#, regex: true, end: true))],
+                       "Hi, World")
+
         XCTAssertNil(str[safe: .start-1])
         XCTAssertNil(str[safe: .end+1])
         XCTAssertNil(str[safe: .last(of: "🤠")])
         XCTAssertNil(str[safe: ..<(.first(of: "z"))])
 
+        XCTAssertEqual(str.index(of: .start), str.startIndex)
+        XCTAssertEqual(str.index(of: .first(of: " ")), str.firstIndex(of: " "))
 
-        str[.end] = "🤡"
+        str[.end] = "🤡" // append
         XCTAssertEqual(str, "Hi, World?!.🤡")
-
     }
 
     static var allTests = [
