@@ -9,7 +9,7 @@
 //
 //  Repo: https://github.com/johnno1962/StringIndex.git
 //
-//  $Id: //depot/StringIndex/Sources/StringIndex/StringIndex.swift#27 $
+//  $Id: //depot/StringIndex/Sources/StringIndex/StringIndex.swift#33 $
 //
 
 import Foundation
@@ -65,103 +65,23 @@ extension String {
         case offsetIndex(index: Index?, offset: Int), start, end,
             first(of: String, regex: Bool = false, end: Bool = false),
             last(of: String, regex: Bool = false, end: Bool = false),
-            chainedOffset(previous: OffsetIndex, offset: Int),
-            chained(previous: OffsetIndex, offset: OffsetIndex),
-            either(_ index: OffsetIndex, or: OffsetIndex)
-
-        func safeIndex<S: StringProtocol>(_ index: Index, offsetBy: Int,
-                                          in string: S) -> Index? {
-            var out = index
-            var offset = offsetBy
-            while offset < 0 && out > string.startIndex {
-                out = string.index(before: out)
-                offset += 1
-            }
-            while offset > 0 && out < string.endIndex {
-                out = string.index(after: out)
-                offset -= 1
-            }
-            return offset == 0 ? out : nil
-        }
-
-        public func index<S: StringProtocol>(from: Index? = nil, in string: S)
-            -> String.Index? {
-            switch self {
-            case .offsetIndex(let index, let offset):
-                guard let index = index else { return nil }
-                return safeIndex(index, offsetBy: offset, in: string)
-            case .start:
-                return string.startIndex
-            case .end:
-                return string.endIndex
-            case .first(let target, let regex, let end):
-                return search(in: string, from: from, target: target,
-                              last: false, regex: regex, end: end)
-            case .last(let target, let regex, let end):
-                return search(in: string, from: from, target: target,
-                              last: true, regex: regex, end: end)
-            case .chainedOffset(let previous, let offset):
-                guard let last = previous.index(in: string) else { return nil }
-                return safeIndex(last, offsetBy: offset, in: string)
-            case .chained(let previous, let offset):
-                guard let last = previous.index(in: string) else { return nil }
-                return offset.index(from: last, in: string)
-            case .either(let index, let or):
-                return index.index(in: string) ?? or.index(in: string)
-            }
-        }
-
-        func search<S: StringProtocol>(in string: S, from: Index?, target: String,
-                                       last: Bool, regex: Bool, end: Bool) -> Index? {
-            let range = last ?
-                string.startIndex..<(from ?? string.endIndex) :
-                (from ?? string.startIndex)..<string.endIndex
-            if regex {
-                do {
-                    let regex = try NSRegularExpression(pattern: target, options: [])
-                    if let match = last ? regex.matches(in: String(string),
-                            options: [], range: NSRange(range, in: string)).last :
-                        regex.firstMatch(in: String(string),
-                            options: [], range: NSRange(range, in: string)),
-                        let out = convert(nsRange: match.range, in: string) {
-                        return end ? out.upperBound : out.lowerBound
-                    }
-                } catch {
-                    fatalError("StringIndex: Invalid regex: \(error)")
-                }
-            } else if let match = string.range(of: target,
-                options: last ? .backwards : [], range: range) {
-                return end ? match.upperBound : match.lowerBound
-            }
-            return nil
-        }
-
-        func convert<S: StringProtocol>(nsRange: NSRange,
-                                        in string: S) -> Range<Index>? {
-            if #available(OSX 10.15, iOS 13.0, tvOS 13.0, *) {
-                return Range(nsRange, in: string)
-            } else {
-                // Fallback on earlier versions
-                let string = NSString(string: String(string))
-                let lower = string.substring(to: nsRange.location).endIndex
-                let upper = string.substring(to: NSMaxRange(nsRange)).endIndex
-                return lower ..< upper
-            }
-        }
+            either(_ index: OffsetIndex, or: OffsetIndex),
+            // can chain either an OffsetIndex or an integer offset
+            chained(previous: OffsetIndex, next: OffsetIndex?, offset: Int)
 
         // Chaining offsets in expressions
         public static func + (index: OffsetIndex, offset: Int) -> OffsetIndex {
-            return .chainedOffset(previous: index, offset: offset)
+            return .chained(previous: index, next: nil, offset: offset)
         }
         public static func - (index: OffsetIndex, offset: Int) -> OffsetIndex {
             return index + -offset
         }
         public static func + (index: OffsetIndex,
                               offset: OffsetIndex) -> OffsetIndex {
-            return .chained(previous: index, offset: offset)
+            return .chained(previous: index, next: offset, offset: 0)
         }
 
-        /// Required by Comparable check when creating ranges
+        /// Required by Comparable to check when creating ranges
         public static func < (lhs: OffsetIndex, rhs: OffsetIndex) -> Bool {
             return false // slight cheat here as we don't know the string
         }
@@ -174,8 +94,78 @@ extension StringProtocol {
     public typealias OOISubstring = OISubstring? // "safe:" prefixed subscripts
 
     /// realise index from OffsetIndex
-    public func index(of: OffsetIndex) -> String.Index? {
-        return of.index(in: self)
+    public func index(of offset: OffsetIndex, from: Index? = nil) -> Index? {
+        switch offset {
+        case .offsetIndex(let index, let offset):
+            guard let index = index else { return nil }
+            return safeIndex(index, offsetBy: offset)
+
+        // Public interface
+        case .start:
+            return startIndex
+        case .end:
+            return endIndex
+        case .first(let target, let regex, let end):
+            return locate(target: target, from: from,
+                          last: false, regex: regex, end: end)
+        case .last(let target, let regex, let end):
+            return locate(target: target, from: from,
+                          last: true, regex: regex, end: end)
+        case .either(let first, let second):
+            return index(of: first) ?? index(of: second)
+
+        case .chained(let previous, let next, let offset):
+            guard let from = index(of: previous) else { return nil }
+            return next != nil ? index(of: next!, from: from) :
+                safeIndex(from, offsetBy: offset)
+        }
+    }
+
+    /// nilable version of index(_ i: Self.Index, offsetBy: Int)
+    public func safeIndex(_ from: Index, offsetBy: Int) -> Index? {
+        var from = from, offset = offsetBy
+        while offset < 0 && from > startIndex {
+            from = index(before: from)
+            offset += 1
+        }
+        while offset > 0 && from < endIndex {
+            from = index(after: from)
+            offset -= 1
+        }
+        return offset == 0 ? from : nil
+    }
+
+    public func locate(target: String, from: Index?,
+                       last: Bool, regex: Bool, end: Bool) -> Index? {
+        let bounds = last ?
+            startIndex..<(from ?? endIndex) :
+            (from ?? startIndex)..<endIndex
+        if regex {
+            do {
+                let regex = try NSRegularExpression(pattern: target, options: [])
+                let string = String(self)
+                if let match = (last ? regex.matches(in: string,
+                        range: NSRange(bounds, in: string)).last :
+                    regex.firstMatch(in: string,
+                        range: NSRange(bounds, in: string)))?.range {
+                    if #available(OSX 10.15, iOS 13.0, tvOS 13.0, *) {
+                        return Range(match, in: string).flatMap {
+                            return end ? $0.upperBound : $0.lowerBound
+                        }
+                    } else {
+                        // Fallback on earlier versions
+                        let loc = end ? NSMaxRange(match) : match.location
+                        return NSString(string: string).substring(to: loc).endIndex
+                    }
+                }
+            } catch {
+                fatalError("StringIndex: Invalid regular expression: \(error)")
+            }
+        } else if let match = range(of: target,
+            options: last ? .backwards : [], range: bounds) {
+            return end ? match.upperBound : match.lowerBound
+        }
+        return nil
     }
 
     /// Subscripts on StringProtocol for OffsetIndex type
