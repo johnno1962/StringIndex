@@ -9,7 +9,7 @@
 //
 //  Repo: https://github.com/johnno1962/StringIndex.git
 //
-//  $Id: //depot/StringIndex/Sources/StringIndex/StringIndex.swift#34 $
+//  $Id: //depot/StringIndex/Sources/StringIndex/StringIndex.swift#35 $
 //
 
 import Foundation
@@ -61,11 +61,11 @@ extension NSRange {
 extension String {
 
     /// Represents an index to be offset
-    public indirect enum OffsetIndex: Comparable {
+    public enum OffsetIndex: Comparable {
         case offsetIndex(index: Index?, offset: Int), start, end,
             first(of: String, regex: Bool = false, end: Bool = false),
-            last(of: String, regex: Bool = false, end: Bool = false),
-            either(_ index: OffsetIndex, or: OffsetIndex),
+            last(of: String, regex: Bool = false, end: Bool = false)
+        indirect case either(_ index: OffsetIndex, or: OffsetIndex),
             // can chain either an OffsetIndex or an integer offset
             chained(previous: OffsetIndex, next: OffsetIndex?, offset: Int)
 
