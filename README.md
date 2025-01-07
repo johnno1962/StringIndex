@@ -10,7 +10,7 @@ let fifthChar: Character = str[str.index(str.startIndex, offsetBy: 4)]
 This package defines addition, and subtraction operators for the
 `String.Index` type returning a temporary enum which conveys
 the offset and index to subscript operators on `StringProtocol` which
-iadvances by the offset lazilly (when it knows the String being indexed).
+advances by the offset lazilly (when it knows the String being indexed).
 The result of this is you can now get the same result by typing:
 
 ```
@@ -60,4 +60,4 @@ XCTAssertNil(str[safe: .end+1])
 Attempting to assign to an invalid index is still a fatal error.
 Have a look through the tests to see what else you can do.
 
-$Date: 2020/12/10 $
+$Date: 2025/01/07 $

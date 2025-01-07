@@ -9,7 +9,7 @@
 //
 //  Repo: https://github.com/johnno1962/StringIndex.git
 //
-//  $Id: //depot/StringIndex/Sources/StringIndex/StringIndex.swift#39 $
+//  $Id: //depot/StringIndex/Sources/StringIndex/StringIndex.swift#40 $
 //
 
 import Foundation
@@ -80,17 +80,8 @@ extension String.Index: OffsetIndexable {
     }
     /// nilable version of index(_ i: Self.Index, offsetBy: Int)
     public func safeIndex(offsetBy: Int, in string: Self.StringType) -> Self? {
-        let start = string.startIndex, end = string.endIndex
-        var from = self, offset = offsetBy
-        while offset < 0 && from > start {
-            from = string.index(before: from)
-            offset += 1
-        }
-        while offset > 0 && from < end {
-            from = string.index(after: from)
-            offset -= 1
-        }
-        return offset == 0 ? from : nil
+        return string.index(self, offsetBy: offsetBy, limitedBy:
+                                offsetBy<0 ? string.startIndex : string.endIndex)
     }
 }
 
